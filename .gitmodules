@@ -1,0 +1,3 @@
+[submodule "Example/ATTSMSSenderExample/External/AFNetworking"]
+	path = Example/ATTSMSSenderExample/External/AFNetworking
+	url = https://github.com/AFNetworking/AFNetworking.git
