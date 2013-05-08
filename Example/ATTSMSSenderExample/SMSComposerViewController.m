@@ -25,6 +25,11 @@
 
 @interface SMSComposerViewController ()
 
+@property (nonatomic, strong) UITextField *phoneTextField;
+@property (nonatomic, strong) UITextField *messageTextField;
+@property (nonatomic, strong) UILabel *statusLabel;
+@property (nonatomic, strong) UIActivityIndicatorView *spinner;
+
 @end
 
 @implementation SMSComposerViewController
@@ -32,19 +37,76 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    NSInteger margin = 5;
+    NSInteger textFieldHeight = 50;
     self.title = @"SMS Composer";
+
+    self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+    self.phoneTextField = [[UITextField alloc] initWithFrame:CGRectMake(margin, margin, self.view.frame.size.width - (margin * 2), textFieldHeight)];
+    self.phoneTextField.backgroundColor = [UIColor blackColor];
+    self.phoneTextField.font = [UIFont systemFontOfSize:25];
+    self.phoneTextField.textAlignment = NSTextAlignmentCenter;
+    self.phoneTextField.borderStyle = UITextBorderStyleBezel;
+    self.phoneTextField.textColor = [UIColor whiteColor];
+    self.phoneTextField.placeholder = @"Phone Number";
+    self.phoneTextField.keyboardType = UIKeyboardTypeNumberPad;
+    self.phoneTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    [self.view addSubview:self.phoneTextField];
+    [self.phoneTextField becomeFirstResponder];
     
-    ATTSMSSender *attService = [[ATTSMSSender alloc] init];
-    [attService sendSMSWithNumber:@"" andMessage:@"" withSuccess:^{
-        NSLog(@"SMS Sent");
-    } andFailure:^(NSError *error, NSData *responseData) {
-       NSDictionary *errorResponseDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
-        NSLog(@"Error Dictionary [%@]", errorResponseDictionary);
-    }];
+    self.messageTextField = [[UITextField alloc] initWithFrame:CGRectMake(margin, self.phoneTextField.frame.origin.y + self.phoneTextField.frame.size.height + margin, self.view.frame.size.width - (margin * 2), textFieldHeight)];
+    self.messageTextField.backgroundColor = [UIColor blackColor];
+    self.messageTextField.font = [UIFont systemFontOfSize:25];
+    self.messageTextField.borderStyle = UITextBorderStyleBezel;
+    self.messageTextField.textAlignment = NSTextAlignmentCenter;
+    self.messageTextField.textColor = [UIColor whiteColor];
+    self.messageTextField.placeholder = @"Message";
+    self.messageTextField.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.messageTextField.keyboardType = UIKeyboardTypeAlphabet;;
+    self.messageTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    [self.view addSubview:self.messageTextField];
+    
+    UIButton *sendButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    sendButton.frame = CGRectMake(margin, self.messageTextField.frame.origin.y + self.messageTextField.frame.size.height + margin, self.view.frame.size.width - (margin * 2), 45);
+    [sendButton setTitle:@"Send SMS" forState:UIControlStateNormal];
+    [sendButton addTarget:self action:@selector(sendButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:sendButton];
+    
+    self.statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, sendButton.frame.origin.y + sendButton.frame.size.height + margin, self.view.frame.size.width, 20)];
+    self.statusLabel.textAlignment = NSTextAlignmentCenter;
+    self.statusLabel.text = @"Text Sent";
+    self.statusLabel.backgroundColor = [UIColor clearColor];
+    self.statusLabel.textColor = [UIColor yellowColor];
+    self.statusLabel.shadowOffset = CGSizeMake(0, 1);
+    self.statusLabel.shadowColor = [UIColor blackColor];
+    self.statusLabel.hidden = YES;
+    [self.view addSubview:self.statusLabel];
+    
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    self.spinner.center = self.statusLabel.center;
+    [self.view addSubview:self.spinner];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
+
+#pragma mark - UIButton Methods
+
+- (void)sendButtonPressed:(UIButton *)sendButton {
+    ATTSMSSender *attService = [[ATTSMSSender alloc] init];
+    [self.spinner startAnimating];
+    self.statusLabel.text = @"";
+    
+    [attService sendSMSWithNumber:self.phoneTextField.text andMessage:self.messageTextField.text withSuccess:^{
+        self.statusLabel.hidden = NO;
+        self.statusLabel.textColor = [UIColor greenColor];
+        self.statusLabel.text = @"SMS sent";
+        [self.spinner stopAnimating];
+    } andFailure:^(NSError *error, NSData *responseData) {
+        NSLog(@"Error  [%@]", error);
+        self.statusLabel.hidden = NO;
+        self.statusLabel.textColor = [UIColor yellowColor];
+        self.statusLabel.text = @"SMS could not be sent";
+        [self.spinner stopAnimating];
+    }];
 }
 
 @end

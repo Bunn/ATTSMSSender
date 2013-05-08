@@ -37,6 +37,12 @@
               withSuccess:(void (^)())success
                andFailure:(void(^)(NSError *error, NSData *responseData))failure {
     
+    if ([number length] <= 0 && [message length] <= 0) {
+        NSError *error = [[NSError alloc] initWithDomain:@"ATTSMSSenderDomain" code:-1001 userInfo:@{@"message": @"Phone number or message cannot be empty."}];
+        failure(error, nil);
+        return;
+    }
+    
     AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:BASE_URL]];
     [httpClient setDefaultHeader:@"Accept" value:@"application/x-www-form-urlencoded"];
     [httpClient setDefaultHeader:@"Content-Type" value:@"application/x-www-form-urlencoded"];
@@ -63,7 +69,7 @@
 
 - (void)sendSMSWithToken:(NSString *)token number:(NSString *)number andMessage:(NSString *)message
              withSuccess:(void (^)())success
-              andFailure:(void(^)(NSError *error, NSData *responseData))failure{
+              andFailure:(void(^)(NSError *error, NSData *responseData))failure {
     
     AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:BASE_URL]];
     [httpClient setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@",token]];
