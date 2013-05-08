@@ -5,6 +5,7 @@ This is a very basic wrapper on top of AFNetwork to send SMS using AT&T's servic
 ## How To Get Started
 - [Create an AT&T developer account](https://developer.att.com/developer/) to get your Client ID and Client Secret.
 - In ATTSMSSender.m add your Client ID and Client Secret at the pre define location.
+- Don't forget to run `git submodule init` and `git submodule update`.
 
 ## Example Usage
 
